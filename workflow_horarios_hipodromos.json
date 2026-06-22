@@ -1,0 +1,154 @@
+{
+  "name": "Horarios Hipodromos - Semanal",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [4],
+              "triggerAtHour": 12,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "5d8f7658-4798-4c5e-96d7-c3fadeaf8718",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "command": "python \"C:\\Users\\dpatr\\Desktop\\CBC- Análisis de datos\\scraper_laplata.py\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [280, 0],
+      "id": "execute-command-1",
+      "name": "Ejecutar Scraper"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "C:/Users/dpatr/.n8n-files/horarios_laplata.csv",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [560, 0],
+      "id": "read-csv-1",
+      "name": "Leer CSV Horarios"
+    },
+    {
+      "parameters": {
+        "operation": "csv",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [840, 0],
+      "id": "extract-csv-1",
+      "name": "Extraer Datos CSV"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nlet rows = '';\nfor (const item of items) {\n  const d = item.json;\n  rows += `<tr><td>${d['Hipódromo'] ?? ''}</td><td>${d['Reunión'] ?? ''}</td><td>${d['Primera carrera'] ?? ''}</td><td>${d['Última carrera'] ?? ''}</td></tr>`;\n}\nconst html = `<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:Arial,sans-serif\">` +\n  `<thead><tr><th>Hipódromo</th><th>Reunión</th><th>Primera carrera</th><th>Última carrera</th></tr></thead>` +\n  `<tbody>${rows}</tbody></table>`;\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 0],
+      "id": "build-html-1",
+      "name": "Generar Tabla HTML"
+    },
+    {
+      "parameters": {
+        "fromEmail": "tu-email@gmail.com",
+        "toEmail": "tu-email@gmail.com",
+        "subject": "Horarios de carreras - La Plata, Palermo y San Isidro",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1400, 0],
+      "id": "send-email-1",
+      "name": "Enviar Mail Horarios",
+      "credentials": {
+        "smtp": {
+          "id": "AEtlETtyk3DXXb8h",
+          "name": "Gmail SMTP - rduran"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutar Scraper": {
+      "main": [
+        [
+          {
+            "node": "Leer CSV Horarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer CSV Horarios": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos CSV": {
+      "main": [
+        [
+          {
+            "node": "Generar Tabla HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Tabla HTML": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mail Horarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

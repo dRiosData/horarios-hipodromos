@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+horarios_laplata.xlsx
+horarios_laplata.csv
