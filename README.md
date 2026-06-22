@@ -10,6 +10,8 @@ Cada hipódromo publica sus horarios en un sitio web distinto, con formatos de f
 
 Un scraper en Python unifica los tres orígenes en una sola tabla, y un workflow de **n8n** lo ejecuta automáticamente todas las semanas y distribuye el resultado por email.
 
+![Workflow de n8n](flujo-n8n.png)
+
 ```
 ┌────────────────┐     ┌──────────────────┐     ┌────────────────────┐
 │ Schedule Trigger│ →   │ Ejecutar Scraper  │ →   │ Leer CSV Horarios   │
